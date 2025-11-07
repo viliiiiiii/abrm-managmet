@@ -52,8 +52,12 @@ ob_start();
         <ul class='list'>
             <?php foreach ($notifications as $note): ?>
                 <li class='list-item'>
-                    <strong><?= htmlspecialchars(strtoupper($note['category'] ?? 'system')) ?></strong>
-                    <span><?= htmlspecialchars($note['message'] ?? '') ?></span>
+                    <div style='display:flex;flex-direction:column;'>
+                        <strong><?= htmlspecialchars(strtoupper($note['type'] ?? 'SYSTEM')) ?></strong>
+                        <span><?= htmlspecialchars($note['title'] ?? ($note['body'] ?? '')) ?></span>
+                        <small style='opacity:0.6;'><?= htmlspecialchars($note['created_at'] ?? '') ?></small>
+                    </div>
+                    <?php if (empty($note['is_read'])): ?><span class='badge'>New</span><?php endif; ?>
                 </li>
             <?php endforeach; ?>
         </ul>

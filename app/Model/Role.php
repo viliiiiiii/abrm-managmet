@@ -23,29 +23,58 @@ final class Role
         }
 
         // 2) Ensure role_permissions exists
-        if (!self::tableExists($pdo, 'role_permissions')) {
+        $grants = [];
+
+        if ($roleId !== null && self::tableExists($pdo, 'role_permissions')) {
+            $sql = "
+                SELECT permission_key, COALESCE(granted, 1) AS granted
+                FROM role_permissions
+                WHERE role_id = :rid
+            ";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(':rid', $roleId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                if (!isset($row['permission_key'])) {
+                    continue;
+                }
+                $key = (string)$row['permission_key'];
+                if ((int)$row['granted'] !== 0) {
+                    $grants[$key] = true;
+                }
+            }
+        } elseif ($roleId !== null) {
             error_log('RBAC: core_db.role_permissions missing.');
-            return [];
         }
 
-        // 3) Fetch granted permission keys
-        $sql = "
-            SELECT permission_key
-            FROM role_permissions
-            WHERE role_id = :rid AND COALESCE(granted, 0) <> 0
-            ORDER BY permission_key ASC
-        ";
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindValue(':rid', $roleId, PDO::PARAM_INT);
-        $stmt->execute();
+        // 4) Apply user-specific overrides if available
+        if (self::tableExists($pdo, 'user_permissions')) {
+            $sql = "
+                SELECT permission_key, COALESCE(granted, 1) AS granted
+                FROM user_permissions
+                WHERE user_id = :uid
+            ";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(':uid', $userId, PDO::PARAM_INT);
+            $stmt->execute();
 
-        $out = [];
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            if (isset($row['permission_key'])) {
-                $out[] = (string)$row['permission_key'];
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                if (!isset($row['permission_key'])) {
+                    continue;
+                }
+                $key = (string)$row['permission_key'];
+                if ((int)$row['granted'] !== 0) {
+                    $grants[$key] = true;
+                } else {
+                    unset($grants[$key]);
+                }
             }
         }
-        return $out;
+
+        ksort($grants);
+
+        return array_keys($grants);
     }
 
     /**

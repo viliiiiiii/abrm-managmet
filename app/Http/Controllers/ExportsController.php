@@ -17,9 +17,14 @@ final class ExportsController extends Controller
             $pdf = new \TCPDF();
             $pdf->SetTitle('Tasks Export');
             $pdf->AddPage();
-            $html = '<h1>Tasks</h1><table border="1" cellpadding="4"><tr><th>Title</th><th>Status</th><th>Sector</th></tr>';
+            $html = '<h1>Tasks</h1><table border="1" cellpadding="4"><tr><th>Title</th><th>Building</th><th>Room</th><th>Assigned</th><th>Status</th><th>Due</th></tr>';
             foreach ($rows as $row) {
-                $html .= '<tr><td>' . htmlspecialchars($row['title']) . '</td><td>' . htmlspecialchars($row['status']) . '</td><td>' . htmlspecialchars($row['sector_name']) . '</td></tr>';
+                $html .= '<tr><td>' . htmlspecialchars($row['title']) . '</td><td>'
+                    . htmlspecialchars($row['building_name']) . '</td><td>'
+                    . htmlspecialchars($row['room_name']) . '</td><td>'
+                    . htmlspecialchars($row['assigned_to']) . '</td><td>'
+                    . htmlspecialchars($row['status']) . '</td><td>'
+                    . htmlspecialchars($row['due_date']) . '</td></tr>';
             }
             $html .= '</table>';
             $pdf->writeHTML($html);
@@ -29,7 +34,10 @@ final class ExportsController extends Controller
         header('Content-Type: text/html');
         echo '<h1>Tasks</h1>';
         foreach ($rows as $row) {
-            echo '<div><strong>' . htmlspecialchars($row['title']) . '</strong> - ' . htmlspecialchars($row['status']) . '</div>';
+            echo '<div><strong>' . htmlspecialchars($row['title']) . '</strong> ('
+                . htmlspecialchars($row['building_name']) . ' / '
+                . htmlspecialchars($row['room_name']) . ') - '
+                . htmlspecialchars($row['status']) . '</div>';
         }
     }
 }
