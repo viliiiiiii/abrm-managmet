@@ -1,117 +1,60 @@
-# ABRM-Managment
+# ABRM-Managment (Vanilla PHP Edition)
 
-> **Status: Implementation blocked**
->
-> This repository is intended to host a Laravel 11 + Inertia/Vue 3 progressive web application for the ABRM management platform. The current environment does not permit outbound HTTP requests, which prevents installing the Laravel framework and required Composer dependencies. The codebase therefore contains only the implementation notes and delivery plan prepared while offline. Once network access is restored, follow the steps below to bootstrap the full stack.
+This repository contains a production-focused baseline for ABRM-Managment implemented with **pure PHP 8.3, PDO, and vanilla JS/CSS**—no external frameworks or package managers required.
 
-## Project overview
+## Features
 
-The application will provide sector-based task and inventory management with offline-capable notes, MinIO object storage integration, Sanctum-powered APIs, and a Workbox-driven progressive web app shell. Two database connections are required: `core_db` (authentication, roles, audit logs) and `punchlist` (operational data). MinIO buckets `abrm-uploads` and `abrm-exports` will store rich-media artifacts and generated documents.
+- Custom front controller, router, and middleware pipeline
+- Secure authentication with Argon2id passwords and optional TOTP 2FA
+- RBAC helpers backed by the `core_db` role & permission tables
+- Dual-database access: `core_db` for identity/audit, `punchlist` for operational data
+- Responsive UI with modals, context menus, and dark-mode toggle
+- Inventory, Tasks, Notes, Users, and Dashboard screens
+- JSON:API-style responses and health check endpoint
+- MinIO presigned upload support via handcrafted SigV4 implementation
+- Offline-ready PWA shell with service worker caching
 
-## Local development bootstrap (requires outbound internet access)
+## Requirements
 
-1. **Install PHP 8.3+, Composer 2.6+, Node 20+, and Docker Desktop.**
-2. **Install the Laravel skeleton** once networking is available:
-   ```bash
-   composer create-project laravel/laravel="^11.0" .
-   ```
-3. **Require project dependencies**:
-   ```bash
-   composer require laravel/sanctum spatie/laravel-permission predis/predis laravel/horizon barryvdh/laravel-dompdf simplesoftwareio/simple-qrcode league/flysystem-aws-s3-v3 guzzlehttp/guzzle laravel/pail
-   npm install --save-dev laravel-vite-plugin @inertiajs/vue3 @headlessui/vue @heroicons/vue tailwindcss postcss autoprefixer @tailwindcss/forms @vueuse/core workbox-window workbox-background-sync workbox-broadcast-update workbox-precaching workbox-routing workbox-strategies workbox-expiration @vitejs/plugin-vue axios dayjs qs zxcvbn
-   ```
-4. **Publish Sanctum and permission configs**, set up Horizon, and scaffold Inertia with Tailwind.
-5. **Apply the SQL schema** contained in `123456.sql` to both `core_db` and `punchlist` with the provided data.
-6. **Copy `config.php` from the legacy application** into `config/legacy.php` (see `docs/legacy-config.md`).
-7. **Configure environment variables** as documented below.
-8. **Run the Docker stack** described in `docker-compose.yml` to launch MySQL (two schemas), Redis, and MinIO.
-9. **Execute database migrations and seeders** (`php artisan migrate --database=core_db`, `php artisan migrate --database=punchlist`, `php artisan db:seed`).
-10. **Run tests and compile assets**: `php artisan test`, `npm run build`, `npm run lint`.
+- PHP 8.3 with extensions: `pdo_mysql`, `openssl`, `zip`, `gd`
+- MySQL-compatible databases seeded from `123456.sql`
+- MinIO (or S3-compatible) object storage
+- Web server configured to serve the `public/` directory as document root
 
-## Environment variables
+## Setup
 
-Create a `.env` file based on the template below:
+1. Copy `.env.example` to `.env` (or export the variables in your environment).
+2. Update credentials for `core_db`, `punchlist`, and MinIO.
+3. Import `123456.sql` into both databases (core data + operational data) to mirror production schema.
+4. Configure your web server (Nginx/Apache/Caddy) to point to `public/index.php`.
+5. Ensure HTTPS is enabled to respect secure cookies and HSTS headers.
+6. (Optional) Provide custom PWA icons by replacing the inline data URIs in `public/manifest.webmanifest` if you want branded artwork.
 
-```
-APP_NAME=ABRM-Managment
-APP_ENV=local
-APP_DEBUG=false
-APP_URL=https://abrm.localhost
-FRONTEND_URLS=https://abrm.localhost,https://staging.abrm.local
-ASSET_URL=${APP_URL}
+## Development
 
-LOG_CHANNEL=stack
-LOG_LEVEL=debug
+- The application auto-loads classes via `vendor_stub.php`.
+- `app/Bootstrap.php` wires configuration, sessions, headers, CSRF, and rate limiting.
+- Routes are registered in `public/index.php`.
+- Views live under `views/` and share the glassmorphism layout in `views/layout.php`.
+- Assets are served directly from `public/assets/`.
 
-DB_CONNECTION=mysql
-DB_CORE_HOST=mysql
-DB_CORE_PORT=3306
-DB_CORE_DATABASE=core_db
-DB_CORE_USERNAME=abrm
-DB_CORE_PASSWORD=secret
+## Testing Health
 
-DB_PUNCHLIST_HOST=mysql
-DB_PUNCHLIST_PORT=3306
-DB_PUNCHLIST_DATABASE=punchlist
-DB_PUNCHLIST_USERNAME=abrm
-DB_PUNCHLIST_PASSWORD=secret
+Visit `/healthz` to verify:
 
-CACHE_STORE=redis
-QUEUE_CONNECTION=redis
-SESSION_DRIVER=redis
-SESSION_LIFETIME=120
-
-REDIS_HOST=redis
-REDIS_PASSWORD=null
-REDIS_PORT=6379
-
-BROADCAST_DRIVER=pusher
-PUSHER_APP_ID=local
-PUSHER_APP_KEY=local
-PUSHER_APP_SECRET=local
-PUSHER_HOST=soketi
-PUSHER_PORT=6001
-PUSHER_SCHEME=http
-
-FILESYSTEM_DISK=minio
-MINIO_ENDPOINT=http://minio:9000
-MINIO_USE_PATH_STYLE=true
-MINIO_KEY=abrm
-MINIO_SECRET=abrmsecret
-MINIO_REGION=us-east-1
-MINIO_BUCKET_UPLOADS=abrm-uploads
-MINIO_BUCKET_EXPORTS=abrm-exports
-
-SANCTUM_STATEFUL_DOMAINS=abrm.localhost
-SESSION_DOMAIN=.abrm.localhost
-
-PUSH_VAPID_PUBLIC=
-PUSH_VAPID_PRIVATE=
-MAIL_MAILER=log
-
-HORIZON_PREFIX=abrm
+```json
+{
+  "app": "ok",
+  "db": {"core": true, "punchlist": true},
+  "minio": true
+}
 ```
 
-## Planned directories & modules
+## MinIO Presigned Uploads
 
-| Module | Description |
-| --- | --- |
-| `app/Domain/Users` | User aggregates, profile updates, 2FA + password history services. |
-| `app/Domain/Inventory` | Inventory items, batches, movement transactions, valuation jobs, export builders. |
-| `app/Domain/Tasks` | Building and room task workflows, photo upload orchestration, QR export generation. |
-| `app/Domain/Notes` | Rich-text notes, attachments, background sync queue reconciliation. |
-| `app/Domain/Sectors` | Sector management, scoped dashboards, access control policies. |
-| `app/Domain/Notifications` | Web push subscription handling, preference center, digest scheduling. |
-| `app/Support/Audit` | Audit logging utilities writing to `core_db` with contextual metadata. |
+Use `POST /photos/presign` with `filename` and `content_type` (and CSRF token) to receive a presigned PUT URL. Requires the `photos.upload` permission.
 
-The `resources/js` tree will provide Vue 3 single-file components for dashboards, entity CRUD modals, background sync workers, and the Workbox-powered service worker. TailwindCSS will be configured via `tailwind.config.js` with custom themes for light/dark modes.
+## Notes
 
-## Offline prep work
-
-Although the framework cannot be installed yet, the following preparation steps are complete:
-
-- A detailed infrastructure and deployment plan is recorded in `docs/architecture.md`.
-- Legacy configuration mapping guidance lives in `docs/legacy-config.md`.
-- Queue, caching, and monitoring strategy outlines are provided in `docs/operations.md`.
-
-Once network access is restored, continue with the bootstrap checklist above to deliver the production-ready implementation.
+- Additional modules (exports, movement workflows, background sync queue processing) are scaffolded for future enhancement.
+- Replace the bundled placeholder QR generator (`lib/phpqrcode.php`) with a full implementation if higher fidelity codes are required.
