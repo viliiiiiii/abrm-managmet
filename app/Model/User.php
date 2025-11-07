@@ -36,6 +36,26 @@ final class User
         }
 
         $user->role_label = (string)($data['role_label'] ?? $data['label'] ?? '');
+
+        if ($user->role_id > 0 && ($user->role_slug === '' || $user->role_label === '')) {
+            $meta = Role::metadataForId($user->role_id);
+            if ($meta) {
+                if (($meta['key_slug'] ?? '') !== '') {
+                    $user->role_slug = (string)$meta['key_slug'];
+                }
+                if (($meta['label'] ?? '') !== '') {
+                    $user->role_label = (string)$meta['label'];
+                }
+            }
+        }
+
+        if ($user->role_slug === '') {
+            $user->role_slug = 'viewer';
+        }
+
+        if ($user->role_label === '') {
+            $user->role_label = ucwords(str_replace('-', ' ', $user->role_slug));
+        }
         return $user;
     }
 

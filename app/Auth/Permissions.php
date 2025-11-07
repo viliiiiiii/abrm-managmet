@@ -13,9 +13,9 @@ final class Permissions
         'exports.tasks' => 'download',
         'notes.view' => 'view',
         'photos.upload' => 'edit',
-        'inventory.view' => 'inventory_manage',
+        'inventory.view' => 'view',
         'inventory.export' => 'download',
-        'notifications.view' => 'notifications_admin',
+        'notifications.view' => 'view',
         'users.view' => 'manage_users',
     ];
 
