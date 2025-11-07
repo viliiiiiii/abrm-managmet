@@ -20,15 +20,10 @@ ob_start();
         </div>
     </div>
     <form method="get" style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;">
-        <select name="type" style="padding:0.75rem;border-radius:0.75rem;border:1px solid rgba(15,23,42,0.15);">
-            <option value="">All types</option>
-            <option value="building" <?= ($filters['type'] ?? '') === 'building' ? 'selected' : '' ?>>Building</option>
-            <option value="room" <?= ($filters['type'] ?? '') === 'room' ? 'selected' : '' ?>>Room</option>
-        </select>
-        <select name="sector_id" style="padding:0.75rem;border-radius:0.75rem;border:1px solid rgba(15,23,42,0.15);">
-            <option value="">All sectors</option>
-            <?php foreach ($sectors as $sector): ?>
-                <option value="<?= (int)$sector['id'] ?>" <?= ($filters['sector_id'] ?? '') == $sector['id'] ? 'selected' : '' ?>><?= htmlspecialchars($sector['name']) ?></option>
+        <select name="building_id" style="padding:0.75rem;border-radius:0.75rem;border:1px solid rgba(15,23,42,0.15);">
+            <option value="">All buildings</option>
+            <?php foreach ($buildings as $building): ?>
+                <option value="<?= (int)$building['id'] ?>" <?= ($filters['building_id'] ?? '') == $building['id'] ? 'selected' : '' ?>><?= htmlspecialchars($building['name']) ?></option>
             <?php endforeach; ?>
         </select>
         <select name="status" style="padding:0.75rem;border-radius:0.75rem;border:1px solid rgba(15,23,42,0.15);">
@@ -37,21 +32,24 @@ ob_start();
             <option value="in_progress" <?= ($filters['status'] ?? '') === 'in_progress' ? 'selected' : '' ?>>In progress</option>
             <option value="done" <?= ($filters['status'] ?? '') === 'done' ? 'selected' : '' ?>>Done</option>
         </select>
+        <input type="text" name="assigned_to" placeholder="Assignee" value="<?= htmlspecialchars($filters['assigned_to'] ?? '') ?>" style="padding:0.75rem;border-radius:0.75rem;border:1px solid rgba(15,23,42,0.15);flex:1;min-width:160px;">
         <button class="primary">Filter</button>
     </form>
 </section>
 <section class="card" data-animate>
     <table class="table">
         <thead>
-        <tr><th>Title</th><th>Sector</th><th>Status</th><th>Due</th></tr>
+        <tr><th>Title</th><th>Building</th><th>Room</th><th>Assigned</th><th>Status</th><th>Due</th></tr>
         </thead>
         <tbody>
         <?php foreach ($tasks['data'] as $task): ?>
             <tr data-context="tasks-menu">
                 <td><?= htmlspecialchars($task['title']) ?></td>
-                <td><?= htmlspecialchars($task['sector_name'] ?? '—') ?></td>
+                <td><?= htmlspecialchars($task['building_name'] ?? '—') ?></td>
+                <td><?= htmlspecialchars($task['room_name'] ?? '—') ?></td>
+                <td><?= htmlspecialchars($task['assigned_to'] ?? '—') ?></td>
                 <td><?= htmlspecialchars($task['status']) ?></td>
-                <td><?= htmlspecialchars($task['due_at'] ?? '—') ?></td>
+                <td><?= htmlspecialchars($task['due_date'] ?? '—') ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>

@@ -9,7 +9,9 @@ final class Inventory
 {
     public static function paginate(int $limit = 20, ?string $cursor = null, array $filters = []): array
     {
-        $sql = 'SELECT i.*, s.name AS sector_name, c.name AS category_name FROM inventory_items i LEFT JOIN sectors s ON s.id = i.sector_id LEFT JOIN categories c ON c.id = i.category_id';
+        $sql = 'SELECT i.id, i.sku, i.name, i.sector_id, i.quantity, i.min_stock, i.location, i.created_at, i.updated_at, s.name AS sector_name'
+            . ' FROM inventory_items i'
+            . ' LEFT JOIN sectors s ON s.id = i.sector_id';
         $params = [];
         $conditions = [];
         if (!empty($filters['sector_id'])) {
@@ -24,7 +26,7 @@ final class Inventory
             $sql .= ' WHERE ' . implode(' AND ', $conditions);
         }
         $sql .= ' ORDER BY i.id DESC';
-        return Paginator::cursor(DB::ops(), $sql, $params, $limit, $cursor, 'i.id');
+        return Paginator::cursor(DB::ops(), $sql, $params, $limit, $cursor, 'id');
     }
 
     public static function lowStock(int $limit = 5): array

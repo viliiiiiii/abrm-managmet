@@ -25,10 +25,23 @@ ob_start();
         <article class="card" data-context="notes-menu">
             <header class="flex flex-between">
                 <h3 style="margin:0;"><?= htmlspecialchars($note['title'] ?? 'Note') ?></h3>
-                <?php if (!empty($note['pinned'])): ?><span class="badge">Pinned</span><?php endif; ?>
+                <?php if (!empty($note['tag_list'])): ?><span class="badge"><?= htmlspecialchars($note['tag_list']) ?></span><?php endif; ?>
             </header>
-            <p style="opacity:0.8;"><?= htmlspecialchars(substr(strip_tags($note['content'] ?? ''), 0, 180)) ?>...</p>
-            <footer style="font-size:0.85rem;opacity:0.6;">By <?= htmlspecialchars($note['author'] ?? 'Unknown') ?> on <?= htmlspecialchars($note['created_at'] ?? '') ?></footer>
+            <p style="opacity:0.8;">
+                <?php
+                $body = trim((string)($note['body'] ?? ''));
+                $plain = strip_tags($body);
+                if (function_exists('mb_substr')) {
+                    $preview = mb_substr($plain, 0, 200);
+                    $truncated = mb_strlen($plain) > 200;
+                } else {
+                    $preview = substr($plain, 0, 200);
+                    $truncated = strlen($plain) > 200;
+                }
+                ?>
+                <?= htmlspecialchars($preview) ?><?= $truncated ? '…' : '' ?>
+            </p>
+            <footer style="font-size:0.85rem;opacity:0.6;">By <?= htmlspecialchars($note['author_name'] ?? 'Unknown') ?> on <?= htmlspecialchars($note['note_date'] ?? '') ?></footer>
         </article>
     <?php endforeach; ?>
 </section>
