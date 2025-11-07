@@ -9,13 +9,19 @@ final class Note
 {
     public static function paginate(int $limit = 20, ?string $cursor = null, array $filters = []): array
     {
-        $sql = 'SELECT n.*, u.name AS author FROM notes n LEFT JOIN users u ON u.id = n.user_id';
+        $sql = 'SELECT n.id, n.user_id, n.note_date, n.title, n.body, n.created_at, n.updated_at, '
+            . 'u.name AS author_name, '
+            . 'GROUP_CONCAT(DISTINCT t.name ORDER BY t.name SEPARATOR ", ") AS tag_list'
+            . ' FROM notes n'
+            . ' LEFT JOIN users u ON u.id = n.user_id'
+            . ' LEFT JOIN note_tags nt ON nt.note_id = n.id'
+            . ' LEFT JOIN tags t ON t.id = nt.tag_id';
         $params = [];
         if (!empty($filters['tag'])) {
-            $sql .= ' WHERE FIND_IN_SET(:tag, n.tags)';
+            $sql .= ' WHERE t.name = :tag';
             $params['tag'] = $filters['tag'];
         }
-        $sql .= ' ORDER BY n.pinned DESC, n.created_at DESC';
+        $sql .= ' GROUP BY n.id ORDER BY n.id DESC';
         return Paginator::cursor(DB::ops(), $sql, $params, $limit, $cursor, 'id');
     }
 }
