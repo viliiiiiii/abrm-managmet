@@ -1,0 +1,21 @@
+{
+  "name": "ABRM-Managment",
+  "short_name": "ABRM",
+  "start_url": "/",
+  "display": "standalone",
+  "scope": "/",
+  "background_color": "#0f172a",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCBmaWxsPSIjMjU2M2ViIiB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIvPjx0ZXh0IHg9IjUwJSIgeT0iNjAlIiBmb250LXNpemU9Ijk2IiBmaWxsPSIjZjhmYWZjIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtd2VpZ2h0PSI3MDAiPkE8L3RleHQ+PC9zdmc+",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCBmaWxsPSIjMjU2M2ViIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTglIiBmb250LXNpemU9IjI4MCIgZmlsbD0iI2Y4ZmFmYyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXdlaWdodD0iNzAwIj5BPC90ZXh0Pjwvc3ZnPg==",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
