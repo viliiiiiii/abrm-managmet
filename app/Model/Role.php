@@ -3,12 +3,122 @@ declare(strict_types=1);
 
 namespace App\Model;
 
+use PDO;
+
 final class Role
 {
+    /**
+     * Return granted permission keys for the given user.
+     * Looks up role_id from users.role_id if available; otherwise tries user↔role pivots.
+     * Reads from core_db.
+     */
     public static function permissionsForUser(int $userId): array
     {
-        $stmt = DB::core()->prepare('SELECT p.slug FROM permissions p JOIN role_permission rp ON rp.permission_id = p.id JOIN roles r ON r.id = rp.role_id JOIN user_role ur ON ur.role_id = r.id WHERE ur.user_id = :id');
-        $stmt->execute(['id' => $userId]);
-        return array_column($stmt->fetchAll(), 'slug');
+        $pdo = DB::core();
+
+        // 1) Resolve user's role_id
+        $roleId = self::detectUserRoleId($pdo, $userId);
+        if ($roleId === null) {
+            return [];
+        }
+
+        // 2) Ensure role_permissions exists
+        if (!self::tableExists($pdo, 'role_permissions')) {
+            error_log('RBAC: core_db.role_permissions missing.');
+            return [];
+        }
+
+        // 3) Fetch granted permission keys
+        $sql = "
+            SELECT permission_key
+            FROM role_permissions
+            WHERE role_id = :rid AND COALESCE(granted, 0) <> 0
+            ORDER BY permission_key ASC
+        ";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindValue(':rid', $roleId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $out = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            if (isset($row['permission_key'])) {
+                $out[] = (string)$row['permission_key'];
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Try to get role_id for a user:
+     *   a) users.role_id
+     *   b) user_role(user_id, role_id) pivot
+     *   c) role_user(user_id, role_id) pivot
+     */
+    private static function detectUserRoleId(PDO $pdo, int $userId): ?int
+    {
+        // a) users.role_id
+        if (self::tableExists($pdo, 'users') && self::columnExists($pdo, 'users', 'role_id')) {
+            $stmt = $pdo->prepare('SELECT role_id FROM users WHERE id = :uid LIMIT 1');
+            $stmt->bindValue(':uid', $userId, PDO::PARAM_INT);
+            $stmt->execute();
+            $rid = $stmt->fetchColumn();
+            if ($rid !== false && $rid !== null) {
+                return (int)$rid;
+            }
+        }
+
+        // b) user_role pivot
+        if (self::tableExists($pdo, 'user_role')) {
+            $stmt = $pdo->prepare('SELECT role_id FROM user_role WHERE user_id = :uid LIMIT 1');
+            $stmt->bindValue(':uid', $userId, PDO::PARAM_INT);
+            $stmt->execute();
+            $rid = $stmt->fetchColumn();
+            if ($rid !== false && $rid !== null) {
+                return (int)$rid;
+            }
+        }
+
+        // c) role_user pivot
+        if (self::tableExists($pdo, 'role_user')) {
+            $stmt = $pdo->prepare('SELECT role_id FROM role_user WHERE user_id = :uid LIMIT 1');
+            $stmt->bindValue(':uid', $userId, PDO::PARAM_INT);
+            $stmt->execute();
+            $rid = $stmt->fetchColumn();
+            if ($rid !== false && $rid !== null) {
+                return (int)$rid;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Does a table exist in the current database? (uses INFORMATION_SCHEMA)
+     */
+    private static function tableExists(PDO $pdo, string $table): bool
+    {
+        $stmt = $pdo->prepare("
+            SELECT 1
+            FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t
+            LIMIT 1
+        ");
+        $stmt->execute([':t' => $table]);
+        return (bool)$stmt->fetchColumn();
+    }
+
+    /**
+     * Does a column exist for a given table? (uses INFORMATION_SCHEMA)
+     */
+    private static function columnExists(PDO $pdo, string $table, string $column): bool
+    {
+        $stmt = $pdo->prepare("
+            SELECT 1
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t AND COLUMN_NAME = :c
+            LIMIT 1
+        ");
+        $stmt->execute([':t' => $table, ':c' => $column]);
+        return (bool)$stmt->fetchColumn();
     }
 }

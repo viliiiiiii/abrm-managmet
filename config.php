@@ -4,23 +4,35 @@ declare(strict_types=1);
 return [
     'app' => [
         'name' => 'ABRM-Managment',
-        'url' => getenv('APP_URL') ?: 'http://localhost',
+        'url' => getenv('APP_URL') ?: 'http://148.230.105.29:8082',
         'frontend_urls' => array_filter(array_map('trim', explode(',', getenv('FRONTEND_URLS') ?: ''))),
         'env' => getenv('APP_ENV') ?: 'local',
         'debug' => (bool)(getenv('APP_DEBUG') ?: false),
         'timezone' => getenv('APP_TIMEZONE') ?: 'UTC',
     ],
     'security' => [
-        'session_name' => getenv('SESSION_NAME') ?: 'abrm_session',
-        'csrf_name' => '_token',
-        'rate_limit' => [
-            'window' => (int)(getenv('RATE_LIMIT_WINDOW') ?: 60),
-            'max_attempts' => (int)(getenv('RATE_LIMIT_MAX') ?: 120),
-        ],
-        'csp' => [
-            'default' => "default-src 'self'",
-        ],
+    'session_name' => getenv('SESSION_NAME') ?: 'abrm_session',
+    'csrf_name'    => '_token',
+    'rate_limit'   => [
+        'window'       => (int)(getenv('RATE_LIMIT_WINDOW') ?: 60),
+        'max_attempts' => (int)(getenv('RATE_LIMIT_MAX') ?: 120),
     ],
+    'csp' => [
+        'default' => "default-src 'self'",
+    ],
+
+    // NEW — tell the app when to treat requests as HTTPS
+    // If you’re on HTTP :8082, leave these false/empty.
+    'force_https'   => filter_var(getenv('FORCE_HTTPS') ?: 'false', FILTER_VALIDATE_BOOL),
+    'cookie_domain' => getenv('COOKIE_DOMAIN') ?: '',
+
+    // NEW — only send HSTS when true (set to true on your HTTPS vhost, false on :8082)
+    'send_hsts'     => filter_var(getenv('SEND_HSTS') ?: 'false', FILTER_VALIDATE_BOOL),
+
+    // NEW — if you’re behind a proxy that sets X-Forwarded-Proto: https
+    'trust_proxy'   => filter_var(getenv('TRUST_PROXY') ?: 'true', FILTER_VALIDATE_BOOL),
+],
+
     'databases' => [
         'core' => [
             'host' => getenv('CORE_DB_HOST') ?: '127.0.0.1',

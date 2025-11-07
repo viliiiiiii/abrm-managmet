@@ -20,7 +20,7 @@ final class User
         $user->id = (int)$data['id'];
         $user->email = $data['email'];
         $user->name = $data['name'] ?? '';
-        $user->password = $data['password'];
+        $user->password = $data['pass_hash'] ?? '';
         $user->role_slug = $data['role_slug'] ?? 'viewer';
         return $user;
     }
