@@ -15,17 +15,11 @@ final class Auth
         self::$config = $config;
     }
 
-    public static function attempt(string $email, string $password, ?string $totp = null): bool
+    public static function attempt(string $email, string $password): bool
     {
         $user = User::findByEmail($email);
         if (!$user || !$user->verifyPassword($password)) {
             return false;
-        }
-
-        if ($user->isTwoFactorEnabled()) {
-            if (!$totp || !TOTP::verify($user->totpSecret(), $totp)) {
-                return false;
-            }
         }
 
         $_SESSION['user_id'] = $user->id;

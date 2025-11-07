@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Controller;
 use App\Auth\Auth;
-use App\Security\Csrf;
 use App\Security\RateLimiter;
 use App\Util\Validator;
 
@@ -28,7 +27,6 @@ final class AuthController extends Controller
         $data = [
             'email' => $_POST['email'] ?? '',
             'password' => $_POST['password'] ?? '',
-            'totp' => $_POST['totp'] ?? null,
         ];
         $errors = Validator::require($data, ['email' => 'required|string', 'password' => 'required|string']);
         if ($errors) {
@@ -37,8 +35,8 @@ final class AuthController extends Controller
             return;
         }
 
-        if (!Auth::attempt($data['email'], $data['password'], $data['totp'])) {
-            $_SESSION['errors'] = ['auth' => ['Invalid credentials or 2FA code']];
+        if (!Auth::attempt($data['email'], $data['password'])) {
+            $_SESSION['errors'] = ['auth' => ['Invalid email or password']];
             header('Location: /login');
             return;
         }

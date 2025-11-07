@@ -11,28 +11,41 @@ unset($_SESSION['errors']);
     <link rel="stylesheet" href="/assets/css/app.css">
     <title>Login — ABRM</title>
 </head>
-<body style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0f172a,#2563eb);">
-    <form method="post" action="/login" class="card" style="width:min(360px,94vw);">
-        <h1 style="margin-top:0;">Sign in</h1>
+<body class="login-body">
+<div class="login-stars" aria-hidden="true"></div>
+<div class="login-shell" data-animate>
+    <section class="login-brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <h1>ABRM<span>Management</span></h1>
+        <p>Secure access to the adaptive building response matrix.</p>
+        <button type="button" data-theme-toggle class="ghost-toggle" aria-label="Toggle theme">
+            <span class="toggle-icon" data-icon>☾</span>
+        </button>
+    </section>
+    <form method="post" action="/login" class="card login-card">
+        <header>
+            <h2>Command Console Login</h2>
+            <p>Enter your credentials to synchronize with control.</p>
+        </header>
         <?php if (!empty($errors)): ?>
-            <div style="background:rgba(220,38,38,0.15);padding:0.75rem 1rem;border-radius:0.75rem;color:#ef4444;">
+            <div class="form-alert" role="alert">
                 <?php foreach ($errors as $field => $messages): ?>
                     <div><?= htmlspecialchars(is_array($messages) ? implode(', ', $messages) : $messages) ?></div>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
-        <label>Email
-            <input type="email" name="email" required style="width:100%;padding:0.75rem;border-radius:0.75rem;border:1px solid rgba(15,23,42,0.15);margin-top:0.35rem;">
+        <label class="field">
+            <span>Email</span>
+            <input type="email" name="email" autocomplete="username" required>
         </label>
-        <label style="display:block;margin-top:1rem;">Password
-            <input type="password" name="password" required style="width:100%;padding:0.75rem;border-radius:0.75rem;border:1px solid rgba(15,23,42,0.15);margin-top:0.35rem;">
-        </label>
-        <label style="display:block;margin-top:1rem;">TOTP Code (if enabled)
-            <input type="text" name="totp" pattern="[0-9]{6}" style="width:100%;padding:0.75rem;border-radius:0.75rem;border:1px solid rgba(15,23,42,0.15);margin-top:0.35rem;">
+        <label class="field">
+            <span>Password</span>
+            <input type="password" name="password" autocomplete="current-password" required>
         </label>
         <input type="hidden" name="<?= htmlspecialchars($csrfField) ?>" value="<?= htmlspecialchars($csrfToken) ?>">
-        <button class="primary" style="width:100%;margin-top:1.5rem;">Login</button>
+        <button class="primary">Initiate Session</button>
     </form>
+</div>
 <script type="module" src="/assets/js/app.js"></script>
 </body>
 </html>

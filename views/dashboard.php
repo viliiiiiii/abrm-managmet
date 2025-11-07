@@ -11,44 +11,55 @@ $nav = [
 ];
 ob_start();
 ?>
-<section class="card" data-animate>
-    <div class="flex flex-between">
+<section class='card hero-card' data-animate>
+    <div class='hero-card__grid'>
         <div>
-            <h2 style="margin:0;font-size:2rem;">Welcome back, <?= htmlspecialchars($user->name ?? 'Guest') ?></h2>
-            <p style="margin:0.25rem 0 0;opacity:0.7;">Here is an overview of today.</p>
+            <h2 class='hero-card__title'>Welcome back, <?= htmlspecialchars($user->name ?? 'Guest') ?></h2>
+            <p class='hero-card__subtitle'>Systems are synchronized and ready. Monitor real-time facility telemetry below.</p>
         </div>
-        <div class="badge">Notifications <?= htmlspecialchars((string)count($notifications)) ?></div>
+        <div class='hero-card__meta'>
+            <span class='badge'>Notifications <?= htmlspecialchars((string)count($notifications)) ?></span>
+        </div>
     </div>
 </section>
-<section class="grid grid-3">
+<section class='grid grid-3'>
     <?php foreach ($tasksByStatus as $status => $count): ?>
-        <div class="card" data-animate>
-            <h3 style="margin:0 0 0.5rem;">Status: <?= htmlspecialchars(ucfirst($status)) ?></h3>
-            <p style="font-size:2rem;font-weight:700;"><?= htmlspecialchars((string)$count) ?></p>
+        <div class='stat-card' data-animate>
+            <h3><?= htmlspecialchars(strtoupper($status)) ?></h3>
+            <div class='value'><?= htmlspecialchars((string)$count) ?></div>
+            <p class='stat-description'><?= htmlspecialchars($status === 'completed' ? 'Tasks cleared today' : 'Tasks currently ' . $status) ?></p>
         </div>
     <?php endforeach; ?>
-    <div class="card" data-animate>
-        <h3 style="margin:0 0 0.5rem;">Low stock alerts</h3>
+    <div class='card' data-animate>
+        <h3 class='section-title'>Low stock alerts</h3>
         <?php if (!$lowStock): ?>
-            <p>No low stock items 🎉</p>
+            <div class='empty-state'>Inventory buffers nominal.</div>
         <?php else: ?>
-            <ul style="margin:0;padding:0;list-style:none;display:grid;gap:0.35rem;">
+            <ul class='list'>
                 <?php foreach ($lowStock as $item): ?>
-                    <li><?= htmlspecialchars($item['name']) ?> <span class="badge">Qty <?= htmlspecialchars((string)$item['quantity']) ?></span></li>
+                    <li class='list-item'>
+                        <span><?= htmlspecialchars($item['name']) ?></span>
+                        <span class='badge'>Qty <?= htmlspecialchars((string)$item['quantity']) ?></span>
+                    </li>
                 <?php endforeach; ?>
             </ul>
         <?php endif; ?>
     </div>
 </section>
-<section class="card" data-animate>
-    <h3 style="margin-top:0;">Recent notifications</h3>
-    <ul style="margin:0;padding:0;list-style:none;display:grid;gap:0.5rem;">
-        <?php foreach ($notifications as $note): ?>
-            <li style="padding:0.75rem 1rem;border-radius:0.75rem;background:rgba(37,99,235,0.08);">
-                <strong><?= htmlspecialchars($note['category'] ?? 'system') ?></strong> — <?= htmlspecialchars($note['message'] ?? '') ?>
-            </li>
-        <?php endforeach; ?>
-    </ul>
+<section class='card' data-animate>
+    <h3 class='section-title'>Recent notifications</h3>
+    <?php if ($notifications): ?>
+        <ul class='list'>
+            <?php foreach ($notifications as $note): ?>
+                <li class='list-item'>
+                    <strong><?= htmlspecialchars(strtoupper($note['category'] ?? 'system')) ?></strong>
+                    <span><?= htmlspecialchars($note['message'] ?? '') ?></span>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php else: ?>
+        <div class='empty-state'>All caught up — no new signals.</div>
+    <?php endif; ?>
 </section>
 <?php
 $content = ob_get_clean();

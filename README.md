@@ -5,10 +5,10 @@ This repository contains a production-focused baseline for ABRM-Managment implem
 ## Features
 
 - Custom front controller, router, and middleware pipeline
-- Secure authentication with Argon2id passwords and optional TOTP 2FA
+- Secure authentication with Argon2id passwords and hardened session controls (no OTP required)
 - RBAC helpers backed by the `core_db` role & permission tables
 - Dual-database access: `core_db` for identity/audit, `punchlist` for operational data
-- Responsive UI with modals, context menus, and dark-mode toggle
+- Futuristic glass-and-neon UI with modals, context menus, and dark-mode toggle
 - Inventory, Tasks, Notes, Users, and Dashboard screens
 - JSON:API-style responses and health check endpoint
 - MinIO presigned upload support via handcrafted SigV4 implementation

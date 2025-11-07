@@ -12,7 +12,6 @@ final class User
     public string $email;
     public string $name;
     public string $password;
-    public ?string $totp_secret;
     public string $role_slug;
 
     public static function fromArray(array $data): self
@@ -22,7 +21,6 @@ final class User
         $user->email = $data['email'];
         $user->name = $data['name'] ?? '';
         $user->password = $data['password'];
-        $user->totp_secret = $data['totp_secret'] ?? null;
         $user->role_slug = $data['role_slug'] ?? 'viewer';
         return $user;
     }
@@ -46,16 +44,6 @@ final class User
     public function verifyPassword(string $password): bool
     {
         return password_verify($password, $this->password);
-    }
-
-    public function isTwoFactorEnabled(): bool
-    {
-        return !empty($this->totp_secret);
-    }
-
-    public function totpSecret(): string
-    {
-        return $this->totp_secret ?? '';
     }
 
     public function isSuperAdmin(): bool

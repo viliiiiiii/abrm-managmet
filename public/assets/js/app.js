@@ -16,14 +16,23 @@ function setupTheme() {
   const stored = localStorage.getItem('abrm-theme');
   if (stored) {
     document.body.classList.toggle('dark', stored === 'dark');
+    syncThemeIcon(stored === 'dark');
   } else {
     document.body.classList.toggle('dark', prefersDark);
+    syncThemeIcon(prefersDark);
   }
   document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
     button.addEventListener('click', () => {
       const isDark = document.body.classList.toggle('dark');
       localStorage.setItem('abrm-theme', isDark ? 'dark' : 'light');
+      syncThemeIcon(isDark);
     });
+  });
+}
+
+function syncThemeIcon(isDark) {
+  document.querySelectorAll('[data-icon]').forEach((icon) => {
+    icon.textContent = isDark ? '☀' : '☾';
   });
 }
 

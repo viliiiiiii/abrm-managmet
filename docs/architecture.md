@@ -13,7 +13,7 @@
 ### Users & Authentication
 - Sanctum SPA tokens with personal access token management UI.
 - Password policies enforced via custom `PasswordHistory` and `PasswordStrength` validators (zxcvbn score >= 3).
-- TOTP 2FA with backup codes, stored in `core_db` encrypted columns.
+- Session-based login using Argon2id-verifiable passwords stored in `core_db`.
 - Audit logging for sign-ins, token issuance, profile edits.
 
 ### Roles & Permissions
