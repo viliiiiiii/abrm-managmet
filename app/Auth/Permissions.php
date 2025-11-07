@@ -7,6 +7,18 @@ use App\Model\Role;
 
 final class Permissions
 {
+    private const PERMISSION_ALIASES = [
+        'tasks.view' => 'view',
+        'tasks.export' => 'download',
+        'exports.tasks' => 'download',
+        'notes.view' => 'view',
+        'photos.upload' => 'edit',
+        'inventory.view' => 'inventory_manage',
+        'inventory.export' => 'download',
+        'notifications.view' => 'notifications_admin',
+        'users.view' => 'manage_users',
+    ];
+
     public static function check(string $permission): bool
     {
         $user = Auth::user();
@@ -16,7 +28,8 @@ final class Permissions
         if ($user->isSuperAdmin()) {
             return true;
         }
-        return in_array($permission, Role::permissionsForUser($user->id), true);
+        $normalized = self::PERMISSION_ALIASES[$permission] ?? $permission;
+        return in_array($normalized, Role::permissionsForUser($user->id), true);
     }
 
     public static function authorize(string $permission): void

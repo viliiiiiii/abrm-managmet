@@ -51,7 +51,10 @@ $user = Auth::user();
         <?php if ($user): ?>
             <div class="nav__profile">
                 <p class="nav__user"><?= htmlspecialchars($user->name ?: $user->email) ?></p>
-                <span class="nav__role">Role: <?= htmlspecialchars(ucwords(str_replace('-', ' ', $user->role_slug))) ?></span>
+                <?php
+                    $roleDisplay = $user->role_label ?: ucwords(str_replace('-', ' ', $user->role_slug));
+                ?>
+                <span class="nav__role">Role: <?= htmlspecialchars($roleDisplay) ?></span>
             </div>
         <?php endif; ?>
         <form method="post" action="/logout" class="nav__logout">
